@@ -1,4 +1,11 @@
-
+install.packages("here")
+install.packages("readxl")
+install.packages("writexl")
+install.packages("openxlsx")
+install.packages("dplyr")
+install.packages("stringr", repos='http://cran.us.r-project.org')
+install.packages("stringi", repos='http://cran.us.r-project.org')
+install.packages("tidyr")
 
 library(here)
 library(readxl)
