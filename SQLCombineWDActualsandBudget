@@ -14,7 +14,7 @@ FROM (
 	GROUP BY EOMONTH(WD.AccountingDateJournal,0),WD.CostCenterRefID, WD.[Category-Ledger],CONCAT(CONCAT(EOMONTH(WD.AccountingDateJournal,0),WD.CostCenterRefID),WD.[Category-Ledger])
 ) WD_Formatted
 
-LEFT JOIN (
+FULL OUTER JOIN (
 	/*Transforms named month and year into a date field for joining to actuals*/
 	SELECT EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0) AS 'EO_Month', OB.CostCenterRefID, OB.CategoryRefID, CONCAT(CONCAT((EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0)),OB.CostCenterRefID), OB.CategoryRefID) AS 'Key', SUM(OB.MonthlyBudget) AS 'Budgeted Amount'
 	FROM
