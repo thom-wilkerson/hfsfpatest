@@ -18,7 +18,7 @@ library(tidyr)
 
 
 
-dir<-"//Client/Z$/2. Reporting/R Reports/Find Journal Lines Breakout/"
+dir<-"//hfsfile/planning/2. Reporting/R Reports/Find Journal Lines Breakout/"
 
 setwd(dir)
 
