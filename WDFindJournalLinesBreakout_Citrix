@@ -23,7 +23,7 @@ dir<-"//hfsfile/planning/2. Reporting/R Reports/Find Journal Lines Breakout/"
 setwd(dir)
 
 
-
+#If you changed the name of the file make sure to change it below here as well.
 spreadsheet="Find Journal Lines Custom - Worktag Breakout R1285.xlsx"
 
 
