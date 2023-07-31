@@ -1,0 +1,56 @@
+SELECT WD_Formatted.[Actual Date] AS 'Month', WD_Formatted.CostCenterRefID, WD_Formatted.[Category-Ledger], WD_Formatted.[Actual Amount], Q_Formatted.[Budgeted Amount]
+FROM (
+	/*Returns Workday Actuals by Category-Ledger for Current Month*/
+	SELECT EOMONTH(WD.AccountingDateJournal,0) AS 'Actual Date',WD.CostCenterRefID, WD.[Category-Ledger],CONCAT(CONCAT(EOMONTH(WD.AccountingDateJournal,0),WD.CostCenterRefID),WD.[Category-Ledger]) AS 'Key', SUM(WD.LedgerBudgetNaturalDebitCreditAmt) AS 'Actual Amount'
+	FROM
+		(SELECT *,
+			CASE
+				WHEN WD_Unformatted.SpendCategoryRefID IS NOT NULL THEN CONCAT(CONCAT(WD_Unformatted.SpendCategoryRefID,'-'),WD_Unformatted.LedgerAccountRefID)
+				WHEN WD_Unformatted.RevenueCategoryRefID IS NOT NULL THEN CONCAT(CONCAT(WD_Unformatted.RevenueCategoryRefID,'-'),WD_Unformatted.LedgerAccountRefID)
+				WHEN WD_Unformatted.SpendCategoryRefID IS NULL AND WD_Unformatted.RevenueCategoryRefID IS NULL THEN CONCAT('XX00000-',WD_Unformatted.LedgerAccountRefID)
+				ELSE 'Error'
+			END AS 'Category-Ledger'
+		FROM vw_Fact_WD_JournalLine WD_Unformatted) WD
+	GROUP BY EOMONTH(WD.AccountingDateJournal,0),WD.CostCenterRefID, WD.[Category-Ledger],CONCAT(CONCAT(EOMONTH(WD.AccountingDateJournal,0),WD.CostCenterRefID),WD.[Category-Ledger])
+) WD_Formatted
+
+LEFT JOIN (
+	/*Transforms named month and year into a date field for joining to actuals*/
+	SELECT EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0) AS 'EO_Month', OB.CostCenterRefID, OB.CategoryRefID, CONCAT(CONCAT((EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0)),OB.CostCenterRefID), OB.CategoryRefID) AS 'Key', SUM(OB.MonthlyBudget) AS 'Budgeted Amount'
+	FROM
+		(SELECT *,
+			CASE
+				WHEN OB_Month.FiscalBudgetMonth = 'July' THEN 7
+				WHEN OB_Month.FiscalBudgetMonth = 'August' THEN 8
+				WHEN OB_Month.FiscalBudgetMonth = 'September' THEN 9
+				WHEN OB_Month.FiscalBudgetMonth = 'October' THEN 10
+				WHEN OB_Month.FiscalBudgetMonth = 'November' THEN 11
+				WHEN OB_Month.FiscalBudgetMonth = 'December' THEN 12
+				WHEN OB_Month.FiscalBudgetMonth = 'January' THEN 1
+				WHEN OB_Month.FiscalBudgetMonth = 'February' THEN 2
+				WHEN OB_Month.FiscalBudgetMonth = 'March' THEN 3
+				WHEN OB_Month.FiscalBudgetMonth = 'April' THEN 4
+				WHEN OB_Month.FiscalBudgetMonth = 'May' THEN 5
+				WHEN OB_Month.FiscalBudgetMonth = 'June' THEN 6
+				ELSE 'Error'
+			END AS 'MonthNumber',
+			CASE
+				WHEN OB_Month.FiscalBudgetMonth = 'July' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'August' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'September' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'October' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'November' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'December' THEN OB_Month.FiscalYear - 1
+				WHEN OB_Month.FiscalBudgetMonth = 'January' THEN OB_Month.FiscalYear
+				WHEN OB_Month.FiscalBudgetMonth = 'February' THEN OB_Month.FiscalYear
+				WHEN OB_Month.FiscalBudgetMonth = 'March' THEN OB_Month.FiscalYear
+				WHEN OB_Month.FiscalBudgetMonth = 'April' THEN OB_Month.FiscalYear
+				WHEN OB_Month.FiscalBudgetMonth = 'May' THEN OB_Month.FiscalYear
+				WHEN OB_Month.FiscalBudgetMonth = 'June' THEN OB_Month.FiscalYear
+				ELSE 'Error'
+			END AS 'CalendarYear'
+		FROM WORKDAY.vw_Fact_Workday_OperatingBudget_Summary OB_Month) OB
+	WHERE OB.Scenario IN ('FY24 Operating Budget')
+	GROUP BY EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0), OB.CostCenterRefID, OB.CategoryRefID, CONCAT(CONCAT((EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0)),OB.CostCenterRefID), OB.CategoryRefID)
+) Q_Formatted ON Q_Formatted.[Key] = WD_Formatted.[Key]
+WHERE WD_Formatted.[Actual Date] BETWEEN EOMONTH(getdate(),-1) AND EOMONTH(getdate(),0)
