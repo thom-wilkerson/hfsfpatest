@@ -1,0 +1,16 @@
+DECLARE @begin_datetime DATETIME = '1753-01-01 00:00:00';
+DECLARE @interval_mins INT = 15;
+
+
+SELECT 
+	pos.[name], 
+	v.payment_date, 
+	DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime) AS payment_15_min_interval, 
+	v.tender_type,
+	v.credit_card_type, 
+	SUM(v.payment_amount) AS 'Sales',
+	COUNT(DISTINCT v.transaction_payment_method_id) AS 'Payment Count'
+FROM vw_Fact_Payments v
+LEFT JOIN vw_Dim_Terminals pos ON pos.dim_terminals_key = v.dim_terminals_key
+WHERE v.payment_date >= DATEADD(YEAR, -1, getdate()) AND v.payment_date <= getdate()
+GROUP BY pos.[name], v.payment_date, DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime), v.tender_type, v.credit_card_type
