@@ -1,0 +1,52 @@
+DECLARE @begin_datetime DATETIME = '1753-01-01 00:00:00';
+DECLARE @interval_mins INT = 15;
+
+
+
+
+SELECT 
+	EOMONTH(v.payment_date) AS 'Month',
+	DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime) AS payment_15_min_interval,
+	pos.[name] AS 'POS Name',
+	v.tender_type,
+	AVG(py.Sales) AS 'PY Sales',
+	AVG(py.[Transaction Count]) AS 'PY Transaction Count',
+	SUM(v.payment_amount) AS 'Sales',
+	COUNT(DISTINCT v.transaction_id) AS 'Transaction Count'
+FROM vw_Fact_Payments v
+LEFT JOIN vw_Dim_Terminals pos ON pos.dim_terminals_key = v.dim_terminals_key
+FULL OUTER JOIN 
+		(
+		SELECT 
+			EOMONTH(v.payment_date) AS 'Month',
+			DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime) AS payment_15_min_interval,
+			pos.[name] AS 'POS Name',
+			v.tender_type,
+			SUM(v.payment_amount) AS 'Sales',
+			COUNT(DISTINCT v.transaction_id) AS 'Transaction Count'
+		FROM vw_Fact_Payments v
+		LEFT JOIN vw_Dim_Terminals pos ON pos.dim_terminals_key = v.dim_terminals_key
+		WHERE v.payment_date BETWEEN DATEADD(YEAR,-1,DATEADD(MONTH,-3,getdate())) AND DATEADD(YEAR, -1, getdate())
+		AND v.store_id = 22
+		GROUP BY 
+			EOMONTH(v.payment_date),
+			DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime),
+			pos.[name],
+			v.tender_type 
+		) py
+ON DATEADD(YEAR, 1, py.[month]) = EOMONTH(v.payment_date)
+AND py.payment_15_min_interval = DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime)
+AND py.[POS Name] = pos.[name]
+AND py.tender_type = v.tender_type
+WHERE v.payment_date BETWEEN DATEADD(MONTH,-3,getdate()) AND getdate()
+AND v.store_id = 22
+GROUP BY 
+	EOMONTH(v.payment_date),
+	DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime),
+	pos.[name],
+	v.tender_type
+ORDER BY
+	EOMONTH(v.payment_date),
+	DATEADD(MINUTE, CEILING(DATEDIFF(MINUTE, @begin_datetime, v.payment_time) / CAST(@interval_mins AS DECIMAL)) * @interval_mins, @begin_datetime),
+	pos.[name],
+	v.tender_type
