@@ -53,4 +53,4 @@ FULL OUTER JOIN (
 	WHERE OB.Scenario IN ('FY24 Operating Budget')
 	GROUP BY EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0), OB.CostCenterRefID, OB.CategoryRefID, CONCAT(CONCAT((EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0)),OB.CostCenterRefID), OB.CategoryRefID)
 ) Q_Formatted ON Q_Formatted.[Key] = WD_Formatted.[Key]
-WHERE WD_Formatted.[Actual Date] BETWEEN DATEADD(MONTH,1,EOMONTH(getdate(),-2)) AND EOMONTH(getdate(),-1)
+WHERE WD_Formatted.[Actual Date] BETWEEN DATEADD(DAY,1,EOMONTH(getdate(),-2)) AND EOMONTH(getdate(),-1)
