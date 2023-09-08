@@ -1,0 +1,19 @@
+SELECT trx.[name] AS 'POS',trx.transaction_id, SUM(trx.[Trx Amount]) AS 'Trx Amount', SUM(pmt.[Payment Amount]) AS 'Pmt Amount', SUM(trx.[Trx Amount]) - SUM(pmt.[Payment Amount]) AS 'Variance'
+FROM (
+	SELECT pos.[name], t.transaction_id, AVG((t.net_sales + t.tax_amount)) AS 'Trx Amount'
+	FROM vw_Fact_Transactions t
+	LEFT JOIN vw_Dim_Terminals pos ON pos.dim_terminals_key = t.dim_terminals_key
+	WHERE t.store_id = 22
+	AND t.transaction_date BETWEEN '8/1/2023' AND getdate()
+	GROUP BY pos.[name], t.transaction_id ) trx
+LEFT JOIN (
+	SELECT p.transaction_id, SUM(p.payment) AS 'Payment Amount'
+	FROM (
+		SELECT p2.transaction_id, p2.transaction_payment_method_id, p2.credit_card_type, AVG(p2.payment_amount) AS 'Payment'
+		FROM vw_Fact_Payments p2
+		GROUP BY p2.transaction_id, p2.transaction_payment_method_id, p2.credit_card_type) p
+	GROUP BY p.transaction_id) pmt
+ON pmt.transaction_id = trx.transaction_id
+GROUP BY trx.[name], trx.transaction_id
+HAVING ROUND((SUM(trx.[Trx Amount]) - SUM(pmt.[Payment Amount])),0) != 0
+ORDER BY trx.[name], trx.transaction_id
