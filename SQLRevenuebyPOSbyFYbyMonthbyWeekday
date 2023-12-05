@@ -1,0 +1,116 @@
+
+SELECT 
+x.[Fiscal Year],
+x.[Month],
+x.[Weekday],
+x.[name],
+x.[Transaction Count]/COUNT(DISTINCT CONCAT(x.[Fiscal Year],x.[Month],x.[name])) AS 'Avg Transaction Count',
+x.[Avg Check]/COUNT(DISTINCT CONCAT(x.[Fiscal Year],x.[Month],x.[name])) AS 'Avg Check'
+FROM (
+	SELECT 
+		pos.[name],
+		CASE
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			ELSE'Do not include'
+		END AS 'Fiscal Year',
+		DATEPART(mm, t.transaction_date) as 'Month',
+		DATEPART(dw, t.transaction_date) as 'Weekday',
+		COUNT(DISTINCT t.transaction_id) as 'Transaction Count', 
+		SUM(t.net_sales)/COUNT(DISTINCT t.transaction_id) as 'Avg Check'
+	FROM dbo.vw_Fact_Transactions t
+	LEFT JOIN vw_Dim_Terminals pos ON pos.dim_terminals_key = t.dim_terminals_key
+	GROUP BY 
+			pos.[name],
+		CASE
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2021 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY22'
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2022 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY23'
+			WHEN DATEPART(mm, t.transaction_date) = 7 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 8 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 9 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 10 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 11 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 12 AND DATEPART(yy, t.transaction_date) = 2023 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 1 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 2 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 3 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 4 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 5 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			WHEN DATEPART(mm, t.transaction_date) = 6 AND DATEPART(yy, t.transaction_date) = 2024 THEN 'FY24'
+			ELSE'Do not include'
+		END,
+		DATEPART(mm, t.transaction_date),
+		DATEPART(dw, t.transaction_date)
+) as x
+WHERE x.[Fiscal Year] NOT IN ('Do not include')
+GROUP BY 
+x.[Fiscal Year],
+x.[Month],
+x.[Weekday],
+x.[name],
+x.[Transaction Count],
+x.[Avg Check]
+HAVING x.[Avg Check] > 2
+ORDER BY
+x.[Fiscal Year],
+x.[Month],
+x.[Weekday],
+x.[name],
+x.[Transaction Count],
+x.[Avg Check]
