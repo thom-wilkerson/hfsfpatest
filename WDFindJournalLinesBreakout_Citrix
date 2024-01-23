@@ -37,7 +37,7 @@ spreadsheet="Find Journal Lines Custom - Worktag Breakout R1285.xlsx"
 
 
 #load spreadsheet with all columns as text to prevent errors when loading Journal Number
-data<-read_xlsx(spreadsheet,sheet="Sheet1",skip=29,col_types="text")
+data<-read_xlsx(spreadsheet,sheet="Sheet1",skip=30,col_types="text")
 #convert ledger debit amount and ledger credit amount back to numeric
 data$`Ledger Debit Amount`<-as.numeric(data$`Ledger Debit Amount`)
 data$`Ledger Credit Amount`<-as.numeric(data$`Ledger Credit Amount`)
