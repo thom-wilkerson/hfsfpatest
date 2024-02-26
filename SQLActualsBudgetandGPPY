@@ -19,7 +19,8 @@
 			END AS 'Category Fix',
 			Q_Formatted.[Actual Amount],
 			WD_Formatted.[Budgeted Amount],
-			py.[PY Amount]
+			py.[PY Amount],
+			IIF(Q_Formatted.[Actual Amount] IS NULL, WD_Formatted.[Budgeted Amount],Q_Formatted.[Actual Amount]) AS 'Forecast'
 		FROM
 		(
 		SELECT EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0) AS 'EO_Month', OB.CostCenterRefID, OB.CategoryRefID, CONCAT(CONCAT((EOMONTH(DATEFROMPARTS(OB.CalendarYear,OB.MonthNumber,1),0)),OB.CostCenterRefID), OB.CategoryRefID) AS 'Key', SUM(OB.MonthlyBudget) AS 'Budgeted Amount'
