@@ -1,0 +1,21 @@
+SELECT
+	CASE
+		WHEN t.transaction_time BETWEEN '3:00:00.000' AND '6:00:00.000' THEN 'Early AM'
+		WHEN t.transaction_time BETWEEN '6:00:00.000' AND '11:00:00.000' THEN 'Breakfast'
+		WHEN t.transaction_time BETWEEN '11:00:00.000' AND '16:00:00.000' THEN 'Lunch'
+		WHEN t.transaction_time BETWEEN '16:00:00.000' AND '20:00:00.000' THEN 'Dinner'
+		ELSE 'Late Night'
+	END AS 'Day Part',
+	ROUND(SUM(t.net_sales)/COUNT(DISTINCT t.transaction_id),2) AS 'Avg Check'
+FROM HFSDW.dbo.vw_Fact_Transactions t
+LEFT JOIN HFSDW.dbo.vw_Dim_Terminals pos ON pos.dim_terminals_key = t.dim_terminals_key
+WHERE t.transaction_date BETWEEN '7/1/2023' AND '6/30/2024'
+AND (pos.[name] LIKE '%LocalPoint%' OR pos.[name] LIKE '%CenterTable%' OR pos.[name] LIKE '%Pagliacci-LocalPoint%' OR pos.[name] LIKE '%Pagliacci-CenterTable%')
+GROUP BY 
+	CASE
+		WHEN t.transaction_time BETWEEN '3:00:00.000' AND '6:00:00.000' THEN 'Early AM'
+		WHEN t.transaction_time BETWEEN '6:00:00.000' AND '11:00:00.000' THEN 'Breakfast'
+		WHEN t.transaction_time BETWEEN '11:00:00.000' AND '16:00:00.000' THEN 'Lunch'
+		WHEN t.transaction_time BETWEEN '16:00:00.000' AND '20:00:00.000' THEN 'Dinner'
+		ELSE 'Late Night'
+	END
